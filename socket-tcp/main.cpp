@@ -19,7 +19,6 @@
 #define INVALID_SOCKET  0
 int _sock;
 int _cSock;
-
 int main(int argc, const char * argv[]) {
     //建立一个socket IPV4 创建面向数据流 tcp/udp
     _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -45,17 +44,29 @@ int main(int argc, const char * argv[]) {
     //accept 等待client连接
     
     _cSock = INVALID_SOCKET;
+    char msgBuf[] = "I`m Server";
+    _cSock = accept(_sock, (sockaddr *)NULL ,NULL);
+    if (INVALID_SOCKET == _sock){
+        printf("invalid client socket\n");
+    }
+    printf("success accept\n");
+    char recvBuf[128] = {};
     while (1) {
-        _cSock = accept(_sock, (sockaddr *)NULL ,NULL);
-        
-        
-        if (INVALID_SOCKET == _sock){
-            printf("invalid client socket\n");
+        long nLen = recv(_sock, recvBuf, strlen(msgBuf)+1, 0);
+        if (nLen <= 0 ){
+            printf("client log out");
+            break;
         }
-        printf("success accept\n");
-        //发送消息
-        char msgBuf[] = "I`m Server";
-        send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
+        if (0 == strcmp(recvBuf, "getName")) {
+            char msgBuf[] = "Levin";
+            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
+        }else if (0 == strcmp(recvBuf, "getAge")){
+            char msgBuf[] = "22";
+            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
+        }else{
+            char msgBuf[] = "what can i help you?";
+            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
+        }
     }
     
     //关闭socket
