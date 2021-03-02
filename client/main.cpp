@@ -17,7 +17,10 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 
-
+struct DataPackage{
+    int age;
+    char name[32];
+};
 int main(int argc, const char * argv[]) {
     int _sock;
     char recvBuf[256] = {};
@@ -47,7 +50,8 @@ int main(int argc, const char * argv[]) {
         }
         long nlen = recv(_sock, recvBuf, 256, 0);
         if (nlen > 0){
-            printf("receive data :%s \n",recvBuf);
+            DataPackage *dp = (DataPackage *)recvBuf;
+            printf("receive data :age:%d name:%s \n",dp->age,dp->name);
         }
     }
     

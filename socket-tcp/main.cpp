@@ -19,6 +19,10 @@
 #define INVALID_SOCKET  0
 int _sock;
 int _cSock;
+struct DataPackage{
+    int age;
+    char name[32];
+};
 int main(int argc, const char * argv[]) {
     //建立一个socket IPV4 创建面向数据流 tcp/udp
     _sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -57,13 +61,12 @@ int main(int argc, const char * argv[]) {
             printf("client log out");
             break;
         }
-        if (0 == strcmp(recvBuf, "getName")) {
-            char msgBuf[] = "Levin";
-            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
-        }else if (0 == strcmp(recvBuf, "getAge")){
-            char msgBuf[] = "22";
-            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
-        }else{
+        if (0 == strcmp(recvBuf, "getInfo")) {
+            DataPackage dp = {80,"zc"};
+            
+            send(_cSock, (const char *)&dp, sizeof(DataPackage), 0);
+        }
+        else{
             char msgBuf[] = "what can i help you?";
             send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
         }
