@@ -100,37 +100,42 @@ int main(int argc, const char * argv[]) {
     printf("success accept\n");
 
     while (1) {
-        DataHeader header = {};
-        long nLen = recv(_cSock, (char *)&header, sizeof(DataHeader), 0);
+        //缓冲区
+        char szRecv[4096] = {};
+        long nLen = recv(_cSock, szRecv, sizeof(DataHeader), 0);
+        DataHeader* header = (DataHeader *)szRecv;
+        
         if (nLen <= 0 ){
             printf("client log out");
             break;
         }
-        switch (header.cmd) {
+        switch (header->cmd) {
             case CMD_LOGIN:
             {
-                Login login = {};
-                recv(_cSock, (char *)&login+sizeof(DataHeader), sizeof(login)-sizeof(DataHeader), 0);
+                
+                recv(_cSock, szRecv+sizeof(DataHeader), header->dataLength-sizeof(DataHeader), 0);
                 //判断账号密码是否正确
-                printf("command:Login length:%d User:%s \n",login.dataLength,login.userName);
+                Login *login = (Login *)szRecv;
+                printf("command:Login length:%d User:%s \n",login->dataLength,login->userName);
                 LoginResult ret;
                 send(_cSock, (char *)&ret, sizeof(LoginResult), 0);
             }
                 break;
             case CMD_LOGOUT:
             {
-                Logout logout = {};
-                recv(_cSock, (char *)&logout+sizeof(DataHeader), sizeof(logout)-sizeof(DataHeader), 0);
-                printf("command:Logout length:%d User:%s \n",logout.dataLength,logout.userName);
+                
+                recv(_cSock, szRecv+sizeof(DataHeader), header->dataLength-sizeof(DataHeader), 0);
+                Logout *logout = (Logout *)szRecv;
+                printf("command:Logout length:%d User:%s \n",logout->dataLength,logout->userName);
                 //判断账号密码是否正确
                 LogoutResult ret;
                 send(_cSock, (char *)&ret, sizeof(ret), 0);
             }
             default:
-                header.cmd = CMD_ERROR;
-                header.dataLength = 0;
+            {
+                DataHeader header = {0,CMD_ERROR};
                 send(_cSock, (char *)&header, sizeof(header), 0);
-                
+            }
                 break;
         }
         
