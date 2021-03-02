@@ -52,7 +52,7 @@ int main(int argc, const char * argv[]) {
     printf("success accept\n");
     char recvBuf[128] = {};
     while (1) {
-        long nLen = recv(_sock, recvBuf, strlen(msgBuf)+1, 0);
+        long nLen = recv(_cSock, recvBuf, strlen(msgBuf)+1, 0);
         if (nLen <= 0 ){
             printf("client log out");
             break;
@@ -68,7 +68,7 @@ int main(int argc, const char * argv[]) {
             send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
         }
     }
-    
+    getchar();
     //关闭socket
     close(_sock);
     return 0;

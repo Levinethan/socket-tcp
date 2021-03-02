@@ -30,8 +30,6 @@ int main(int argc, const char * argv[]) {
     _sin.sin_family = AF_INET;
     _sin.sin_port = htons(4500);
     _sin.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    
     int ret = connect(_sock, (sockaddr *)&_sin, sizeof(sockaddr));
     if (ret == -1) {
         printf("error\n");
@@ -39,10 +37,21 @@ int main(int argc, const char * argv[]) {
         printf("success connect server\n");
     }
     
-    long nlen = recv(_sock, recvBuf, 256, 0);
-    if (nlen > 0){
-        printf("receive data :%s \n",recvBuf);
+    while (true) {
+        char cmdBuf[128] = {};
+        scanf("%s",cmdBuf);
+        if (0 == strcmp(cmdBuf, "exit")) {
+            break;
+        }else{
+            send(_sock, cmdBuf, strlen(cmdBuf)+1, 0);
+        }
+        long nlen = recv(_sock, recvBuf, 256, 0);
+        if (nlen > 0){
+            printf("receive data :%s \n",recvBuf);
+        }
     }
+    
+
     close(_sock);
     getchar();
     return 0;
