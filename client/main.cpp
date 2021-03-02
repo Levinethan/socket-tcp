@@ -65,7 +65,7 @@ int main(int argc, const char * argv[]) {
             break;
         }else if (0 == strcmp(cmdBuf, "login")){
             Login login = {"cooci","qwer1234"};
-            DataHeader dh = {CMD_LOGIN,sizeof(login)};
+            DataHeader dh = {sizeof(login),CMD_LOGIN};
             
 
             send(_sock, (char *)&dh, sizeof(dh), 0);
@@ -80,7 +80,7 @@ int main(int argc, const char * argv[]) {
             printf("Login Result %d\n",loginRet.result);
         }else if (0 == strcmp(cmdBuf, "logout")){
             Logout logout = {"cooci"};
-            DataHeader dh = {CMD_LOGOUT,sizeof(Logout)};
+            DataHeader dh = {sizeof(Logout),CMD_LOGOUT};
             send(_sock, (char *)&dh, sizeof(dh), 0);
             send(_sock, (char *)&logout, sizeof(logout), 0);
             
