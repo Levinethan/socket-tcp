@@ -16,14 +16,32 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
-
-struct DataPackage{
-    int age;
-    char name[32];
+enum CMD{
+    CMD_LOGIN,
+    CMD_LOGOUT,
+    CMD_ERROR
+};
+struct DataHeader{
+    short dataLength;
+    short cmd;
+};
+struct Login{
+    char userName[32];
+    char PassWord[32];
+};
+struct LoginResult{
+    int result;
+    
+};
+struct Logout{
+    char userName[32];
+};
+struct LogoutResult{
+    int result;
 };
 int main(int argc, const char * argv[]) {
     int _sock;
-    char recvBuf[256] = {};
+    char recvBuf[128] = {};
     if ((_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
             fprintf(stderr,"Socket error:%s\n\a", strerror(errno));
             exit(1);
@@ -45,13 +63,38 @@ int main(int argc, const char * argv[]) {
         scanf("%s",cmdBuf);
         if (0 == strcmp(cmdBuf, "exit")) {
             break;
+        }else if (0 == strcmp(cmdBuf, "login")){
+            Login login = {"cooci","qwer1234"};
+            DataHeader dh = {CMD_LOGIN,sizeof(login)};
+            
+
+            send(_sock, (char *)&dh, sizeof(dh), 0);
+            send(_sock, (char *)&login, sizeof(login), 0);
+            
+            DataHeader retHeader = {};
+            LoginResult loginRet = {};
+            
+            recv(_sock, (char *)&retHeader, sizeof(retHeader), 0);
+            recv(_sock, (char *)&loginRet, sizeof(loginRet), 0);
+            
+            printf("Login Result %d\n",loginRet.result);
+        }else if (0 == strcmp(cmdBuf, "logout")){
+            Logout logout = {"cooci"};
+            DataHeader dh = {CMD_LOGOUT,sizeof(Logout)};
+            send(_sock, (char *)&dh, sizeof(dh), 0);
+            send(_sock, (char *)&logout, sizeof(logout), 0);
+            
+            DataHeader retHeader = {};
+            LogoutResult logoutRet = {};
+            
+            recv(_sock, (char *)&retHeader, sizeof(retHeader), 0);
+            recv(_sock, (char *)&logoutRet, sizeof(logoutRet), 0);
+            
+            printf("Logout Result %d\n",logoutRet.result);
+            
+            
         }else{
-            send(_sock, cmdBuf, strlen(cmdBuf)+1, 0);
-        }
-        long nlen = recv(_sock, recvBuf, 256, 0);
-        if (nlen > 0){
-            DataPackage *dp = (DataPackage *)recvBuf;
-            printf("receive data :age:%d name:%s \n",dp->age,dp->name);
+            printf("unsupport command,please try again\n");
         }
     }
     

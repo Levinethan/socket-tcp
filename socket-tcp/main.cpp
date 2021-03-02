@@ -19,9 +19,28 @@
 #define INVALID_SOCKET  0
 int _sock;
 int _cSock;
-struct DataPackage{
-    int age;
-    char name[32];
+enum CMD{
+    CMD_LOGIN,
+    CMD_LOGOUT,
+    CMD_ERROR
+};
+struct DataHeader{
+    short dataLength;
+    short cmd;
+};
+struct Login{
+    char userName[32];
+    char PassWord[32];
+};
+struct LoginResult{
+    int result;
+    
+};
+struct Logout{
+    char userName[32];
+};
+struct LogoutResult{
+    int result;
 };
 int main(int argc, const char * argv[]) {
     //建立一个socket IPV4 创建面向数据流 tcp/udp
@@ -48,28 +67,52 @@ int main(int argc, const char * argv[]) {
     //accept 等待client连接
     
     _cSock = INVALID_SOCKET;
-    char msgBuf[] = "I`m Server";
+    
     _cSock = accept(_sock, (sockaddr *)NULL ,NULL);
     if (INVALID_SOCKET == _sock){
         printf("invalid client socket\n");
     }
     printf("success accept\n");
-    char recvBuf[128] = {};
+
     while (1) {
-        long nLen = recv(_cSock, recvBuf, strlen(msgBuf)+1, 0);
+        DataHeader header = {};
+        
+        long nLen = recv(_cSock, (char *)&header, sizeof(DataHeader), 0);
         if (nLen <= 0 ){
             printf("client log out");
             break;
         }
-        if (0 == strcmp(recvBuf, "getInfo")) {
-            DataPackage dp = {80,"zc"};
-            
-            send(_cSock, (const char *)&dp, sizeof(DataPackage), 0);
+        printf("command:%d length:%d \n",header.cmd,header.dataLength);
+        switch (header.cmd) {
+            case CMD_LOGIN:
+            {
+                Login login = {};
+                recv(_cSock, (char *)&login, sizeof(login), 0);
+                //判断账号密码是否正确
+                LoginResult ret = {0};
+                
+                send(_cSock, (char *)&header, sizeof(DataHeader), 0);
+                send(_cSock, (char *)&ret, sizeof(LoginResult), 0);
+            }
+                break;
+            case CMD_LOGOUT:
+            {
+                Logout logout = {};
+                recv(_cSock, (char *)&logout, sizeof(logout), 0);
+                //判断账号密码是否正确
+                LogoutResult ret = {1};
+                
+                send(_cSock, (char *)&header, sizeof(header), 0);
+                send(_cSock, (char *)&ret, sizeof(LogoutResult), 0);
+            }
+            default:
+                header.cmd = CMD_ERROR;
+                header.dataLength = 0;
+                send(_cSock, (char *)&header, sizeof(header), 0);
+                
+                break;
         }
-        else{
-            char msgBuf[] = "what can i help you?";
-            send(_cSock, msgBuf, strlen(msgBuf)+1, 0);
-        }
+        
     }
     getchar();
     //关闭socket
